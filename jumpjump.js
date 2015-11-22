@@ -18,12 +18,14 @@ function startScene(){
 	start.onclick = gameScene;
 	start.value = "Start";
     start.id = "menuScene-output";
-	/*start.style.margin= "auto";
+/*
+	start.style.margin= "auto";
 	start.style.position= "absolute";
 	start.style.top= 0; 
-	start.style.left= 1; 
+	start.style.left= window.innerWidth/2.0; 
 	start.style.bottom= 0; 
-	start.style.right= 1;*/
+	start.style.right= window.innerWidth/2.0;*/
+
 	// add startScene to the html element
 	document.getElementById("WebGL-output").appendChild(start);
 }
@@ -34,16 +36,18 @@ function gameScene(){
 	
     // create a scene, that will hold all our elements such as objects, cameras and lights.
     var scene = new THREE.Scene();
+    scene.fog = new THREE.Fog(0xaaaaaa, 0.010, 200);
+    
     // create a camera, which defines where we're looking at.
     var camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
     // position and point the camera to the center of the scene
-    camera.position.x = -10;
-    camera.position.y = 10;
-    camera.position.z = 40;
+    camera.position.x = 0;
+    camera.position.y = 0;
+    camera.position.z = 50;
     camera.lookAt(scene.position);
     // create a render and set the size
-    var renderer = new THREE.WebGLRenderer();
-    renderer.setClearColor(new THREE.Color(0xEEEEEE, 1.0));
+    var renderer = new THREE.WebGLRenderer({antialias: true, alpha: true});
+    renderer.setClearColor(new THREE.Color(0xaaaaff, 1.0));
     renderer.setSize(window.innerWidth, window.innerHeight);
     //renderer.shadowMapEnabled = true;
 	
@@ -58,6 +62,69 @@ function gameScene(){
     spotLight.castShadow = true;
     scene.add(spotLight);
 	
+
+    var hemiLight = new THREE.HemisphereLight( 0x0000ff, 0xff0000, 0.6);
+    hemiLight.position.set(0,500,0);
+	scene.add(hemiLight);
+	
+	var lava = THREE.ImageUtils.loadTexture("../lava.jpg");
+    lava.wrapS = THREE.RepeatWrapping;
+    lava.wrapT = THREE.RepeatWrapping;
+    lava.repeat.set(1.0, 0.8);
+
+
+    var planeGeometry = new THREE.PlaneGeometry(1000, 200, 20, 20);
+    var planeMaterial = new THREE.MeshLambertMaterial({map: lava});
+//        var planeMaterial = new THREE.MeshLambertMaterial();
+    var plane = new THREE.Mesh(planeGeometry, planeMaterial);
+    plane.receiveShadow = true;
+
+     // rotate and position the plane
+        plane.rotation.x = -0.5 * Math.PI;
+        plane.position.x = 0;
+        plane.position.y = -25;
+        plane.position.z = 0;
+
+    scene.add(plane);
+/*
+    var spotLight0 = new THREE.SpotLight(0xcccccc);
+    spotLight0.position.set(30, 10, -50);
+    spotLight0.lookAt(plane);
+    scene.add(spotLight0);*/
+
+    var pointColor = "#ffffff";
+var spotLight2 = new THREE.DirectionalLight(pointColor);
+        spotLight2.position.set(30, 10, -50);
+        spotLight2.castShadow = true;
+        spotLight2.shadowCameraNear = 0.1;
+        spotLight2.shadowCameraFar = 1000;
+        spotLight2.shadowCameraFov = 500;
+        spotLight2.target = plane;
+        spotLight2.distance = 0;
+        spotLight2.shadowCameraNear = 2;
+        spotLight2.shadowCameraFar = 400;
+        spotLight2.shadowCameraLeft = -200;
+        spotLight2.shadowCameraRight = 200;
+        spotLight2.shadowCameraTop = 200;
+        spotLight2.shadowCameraBottom = -200;
+        spotLight2.shadowMapWidth = 2048;
+        spotLight2.shadowMapHeight = 2048;
+        scene.add(spotLight2);
+
+	var textureFlare0 = THREE.ImageUtils.loadTexture("../lensflare0.png");
+    var textureFlare3 = THREE.ImageUtils.loadTexture("../lensflare3.png");
+
+    var flareColor = new THREE.Color(0xffaacc);
+    var lensFlare = new THREE.LensFlare(textureFlare0, 150, 0.0, THREE.AdditiveBlending, flareColor);
+
+    lensFlare.add(textureFlare3, 60, 0.6, THREE.AdditiveBlending);
+    lensFlare.add(textureFlare3, 70, 0.7, THREE.AdditiveBlending);
+    lensFlare.add(textureFlare3, 120, 0.9, THREE.AdditiveBlending);
+    lensFlare.add(textureFlare3, 70, 1.0, THREE.AdditiveBlending);
+
+    lensFlare.position.copy(spotLight2.position);
+    scene.add(lensFlare);
+
 	/* Debug use 
 	var sphere1 = new THREE.SphereGeometry(0.1,20,20);
 	var material1 =  new THREE.MeshLambertMaterial({color: 0xff0000, shading:THREE.SmoothShading});
@@ -166,8 +233,8 @@ function Jumpjump(scene){
 	this.jumpOriginX;
 	this.jumpOriginY;
 	this.frameCount = 0;
-	this.boardsFrame = 200; // speed of generating new floating boards
-	this.boardsMove = 0.15; // speed of moving floating boards
+	this.boardsFrame = 100; // speed of generating new floating boards
+	this.boardsMove = 0.3; // speed of moving floating boards
 	this.starFrame = 120; // speed of generating new stars
 	this.starMove = 0.3; // speed of moving stars
 	this.score = 0;
@@ -175,7 +242,9 @@ function Jumpjump(scene){
 	this.floating_boards = [];
 	this.fatal_boards = [];
 	this.stars = [];
-	
+	this.scores = [];
+	this.points = [];
+	this.currentT = 0;
 }
 Jumpjump.prototype.constructor = Jumpjump;
 Jumpjump.prototype.init = function(){
@@ -191,6 +260,9 @@ Jumpjump.prototype.init = function(){
 	
 }
 Jumpjump.prototype.update = function(){
+
+
+
 	// Add new floating boards
 	if(this.frameCount % this.boardsFrame == 0){
 		var floating_board = createFloatingBoard(this.widthBound, rand(30)-16, 0);
@@ -200,7 +272,7 @@ Jumpjump.prototype.update = function(){
 	}
 	
 	// Add new fatal boards
-	if((this.frameCount+110) % (this.boardsFrame*2) == 0){
+	if((this.frameCount+150) % (this.boardsFrame*2) == 0){
 		var fatal_board = createFatalBoard(this.widthBound, rand(30)-16, 0);
 		this.scene.add(fatal_board);
 		this.fatal_boards.push(fatal_board);
@@ -230,16 +302,43 @@ Jumpjump.prototype.update = function(){
 		if (star.position.x < -this.widthBound){
 			this.scene.remove(star);
 			this.stars.splice(i,1);
+			i--;
 			//console.log(this.stars);
 		}
 		
 		// Player collects the star, add score
 		if (intersect(this.player, star)){
 			this.scene.remove(star);
+			var pos = star.position;
 			this.stars.splice(i,1);
+			i--;
 			this.score += 100;
+			 var options = {
+                    size: 3.0,
+                    height: 0.5,
+
+                    bevelEnabled: false,
+                    curveSegments: 1,
+                    font:"helvetiker",
+                    weight:"normal",
+                    style: "normal"
+                };
+
+			text1 = new THREE.Mesh(new THREE.TextGeometry("+100",options));
+            text1.position.copy(pos);
+            this.scene.add(text1);
+            this.points.push(text1);
+            this.currentT = this.frameCount;
+           
+
 		}
 	}
+	 if (this.frameCount == this.currentT + 50){
+            	var point = this.points[0];
+            	this.scene.remove(point);
+            	this.points.splice(0,1);
+            }
+
 	
 	for (var i=0; i<this.floating_boards.length; i++){
 		var floating_board = this.floating_boards[i];
@@ -248,6 +347,7 @@ Jumpjump.prototype.update = function(){
 		if (floating_board.position.x < -this.widthBound){
 			this.scene.remove(floating_board);
 			this.floating_boards.splice(i,1);
+			i--;
 		}
 	
 	    // Player steps on the floating board
@@ -266,6 +366,7 @@ Jumpjump.prototype.update = function(){
 		if (fatal_board.position.x < -this.widthBound){
 			this.scene.remove(fatal_board);
 			this.fatal_boards.splice(i,1);
+			i--;
 		}
 		
 		// If player steps on the fatal board, then game over
@@ -293,10 +394,39 @@ Jumpjump.prototype.update = function(){
 	}
 	
 	this.frameCount++; 
+	
 	// compute score  score++;
 	if(this.frameCount % 30 == 0){
 		this.score++;
+		//this.boardsMove += 0.01;
+		//this.starMove += 0.01;
+		//this.boardsFrame -= 5;
 	}
+
+	var options = {
+        size: 3.0,
+        height: 0.5,
+
+        bevelEnabled: false,
+        curveSegments: 1,
+        font:"helvetiker",
+        weight:"normal",
+        style: "normal"
+    };
+    if (this.frameCount % 30 == 1){
+    var text2 = new THREE.Mesh(new THREE.TextGeometry("Scores: " + this.score,options));
+    text2.position.set(15,15,0);
+    this.scene.add(text2);
+    this.scores.push(text2);}
+
+
+    if(this.frameCount % 30  == 0){
+    	var score = this.scores[0];
+    this.scene.remove(score);
+    this.scores.splice(0,1);
+    }
+
+
 	
 	// if player is out of bound, then game over
 	if (this.player.position.x <= -this.widthBound+4 ||
@@ -335,6 +465,7 @@ function createFloatingBoard(x, y, z){
 	board.width = width;
 	board.height = height;
 	board.depth = depth;
+	
 	return board;
 }
 
@@ -351,8 +482,38 @@ function createFatalBoard(x, y, z){
 	board.width = width;
 	board.height = height;
 	board.depth = depth;
+	
+	/*
+	var tetrahedronGeometry = new THREE.TetrahedronGeometry(1,0);
+	var tetrahedronMaterial = boardMaterial;
+	var spike1 = new THREE.Mesh(tetrahedronGeometry, tetrahedronMaterial);
+	var spike2 = new THREE.Mesh(tetrahedronGeometry, tetrahedronMaterial);
+	var spike3 = new THREE.Mesh(tetrahedronGeometry, tetrahedronMaterial);
+	var spike4 = new THREE.Mesh(tetrahedronGeometry, tetrahedronMaterial);
+
+	spike1.position.set(x-3, y+1, z);
+	spike2.position.set(x-1, y+1, z);
+	spike3.position.set(x+1, y+1, z);
+	spike4.position.set(x+3, y+1, z);
+
+	//board.add(spike1);
+	var group = new THREE.Group();
+	group.add(board);
+	group.add(spike1);
+	group.add(spike2);
+	group.add(spike3);
+	group.add(spike4);
+	group.position.copy(board.position);
+	//board.add(spike2);
+	//board.add(spike3);
+	//board.add(spike4);
+	*/
+
+
 	return board;
 }
+
+
 
 function createStar(x, y, z){
 	var radius = 2.5;
