@@ -67,7 +67,7 @@ function gameScene(){
     hemiLight.position.set(0,500,0);
 	scene.add(hemiLight);
 	
-	var lava = THREE.ImageUtils.loadTexture("../lava.jpg");
+	var lava = THREE.ImageUtils.loadTexture("libs/lava.jpg");
     lava.wrapS = THREE.RepeatWrapping;
     lava.wrapT = THREE.RepeatWrapping;
     lava.repeat.set(1.0, 0.8);
@@ -111,8 +111,8 @@ var spotLight2 = new THREE.DirectionalLight(pointColor);
         spotLight2.shadowMapHeight = 2048;
         scene.add(spotLight2);
 
-	var textureFlare0 = THREE.ImageUtils.loadTexture("../lensflare0.png");
-    var textureFlare3 = THREE.ImageUtils.loadTexture("../lensflare3.png");
+	var textureFlare0 = THREE.ImageUtils.loadTexture("libs/lensflare0.png");
+    var textureFlare3 = THREE.ImageUtils.loadTexture("libs/lensflare3.png");
 
     var flareColor = new THREE.Color(0xffaacc);
     var lensFlare = new THREE.LensFlare(textureFlare0, 150, 0.0, THREE.AdditiveBlending, flareColor);
