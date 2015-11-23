@@ -293,7 +293,7 @@ function Jumpjump(scene){
 	this.frameCount = 0;
 	this.boardsFrame = 100; // speed of generating new floating boards
 	this.boardsMove = 0.3; // speed of moving floating boards
-	this.starFrame = 120; // speed of generating new stars
+	this.starFrame = 230; // speed of generating new stars
 	this.starMove = 0.3; // speed of moving stars
 	this.score = 0;
 	this.boards = [];
@@ -340,7 +340,7 @@ Jumpjump.prototype.update = function(){
 	
 	
 	// Add new stars
-	if((this.frameCount-50) % this.boardsFrame == 0){
+	if((this.frameCount-80) % this.starFrame == 0){
 		var star = createStar(this.widthBound, rand(30)-15, 0); 
 		this.scene.add(star);
 		this.stars.push(star);
@@ -388,6 +388,8 @@ Jumpjump.prototype.update = function(){
             this.scene.add(text1);
             this.points.push(text1);
             this.currentT = this.frameCount;
+
+            this.scene.children[4].position.x -= 10;
            
 
 		}
@@ -464,7 +466,7 @@ Jumpjump.prototype.update = function(){
 
 	if(this.frameCount % 2 == 0){
 		var list = this.scene.children;
-		list[4].position.x+=0.05;
+		list[4].position.x+=0.1;
 	}
 
 	var options = {
@@ -496,7 +498,7 @@ Jumpjump.prototype.update = function(){
 	if (this.player.position.x <= this.scene.children[4].position.x+15 ||
 	    this.player.position.x >= this.widthBound-10 ||
 		this.player.position.y <= -this.heightBound+10 ||
-		this.player.position.y >= this.heightBound-10){
+		this.player.position.y >= this.heightBound-5){
 		return false;
 	}
 	//console.log(this.player.position.x);
