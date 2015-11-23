@@ -86,6 +86,64 @@ function gameScene(){
         plane.position.z = 0;
 
     scene.add(plane);
+
+    var box = new THREE.BoxGeometry(110, 80, 20);
+	var boxmaterial = new THREE.MeshLambertMaterial({color:0xcccccc});
+	var spikeboard = new THREE.Mesh(box, boxmaterial);
+	spikeboard.rotation.y = -0.5 * Math.PI;
+	spikeboard.position.x = -60;
+	spikeboard.position.y = 0;
+	spikeboard.position.z = 0;
+	spikeboard.receiveShadow = true;
+
+
+	function getPoints() {
+        var points = [];
+        for (var i = 0; i < 49; i+=8) {
+        	for (var j = 0; j < 30; j+=8){
+
+        		var z = -10;
+                var x = 50 - 2 * i;
+                var y = 30 - 2 * j;
+
+                points.push(new THREE.Vector3(x, y, z));
+        	}
+                
+        }
+
+        return points;
+    }
+
+    var spikes = [];
+    var points = getPoints();
+
+    points.forEach(function (point) {
+		var tetrahedronGeometry = new THREE.TetrahedronGeometry(4,0);
+		var tetrahedronMaterial = boxmaterial;
+
+        var spike = new THREE.Mesh(tetrahedronGeometry, tetrahedronMaterial);
+        spike.rotation.x = -0.3 * Math.PI;
+        spike.position.copy(point);
+
+        spikeboard.add(spike);
+        spikes.push(spike);
+    });
+
+
+	//board.add(spike1);
+	/*var group = new THREE.Group();
+	group.add(board);
+	group.add(spike1);
+	group.add(spike2);
+	group.add(spike3);
+	group.add(spike4);*/
+	//board.add(spike2);
+	//board.add(spike3);
+	//board.add(spike4);
+	
+
+	spikeboard.position.z = -50;
+	scene.add(spikeboard);
 /*
     var spotLight0 = new THREE.SpotLight(0xcccccc);
     spotLight0.position.set(30, 10, -50);
@@ -245,6 +303,7 @@ function Jumpjump(scene){
 	this.scores = [];
 	this.points = [];
 	this.currentT = 0;
+	
 }
 Jumpjump.prototype.constructor = Jumpjump;
 Jumpjump.prototype.init = function(){
@@ -403,6 +462,11 @@ Jumpjump.prototype.update = function(){
 		//this.boardsFrame -= 5;
 	}
 
+	if(this.frameCount % 2 == 0){
+		var list = this.scene.children;
+		list[4].position.x+=0.05;
+	}
+
 	var options = {
         size: 3.0,
         height: 0.5,
@@ -429,14 +493,17 @@ Jumpjump.prototype.update = function(){
 
 	
 	// if player is out of bound, then game over
-	if (this.player.position.x <= -this.widthBound+4 ||
-	    this.player.position.x >= this.widthBound ||
-		this.player.position.y <= -this.heightBound ||
-		this.player.position.y >= this.heightBound){
+	if (this.player.position.x <= this.scene.children[4].position.x+15 ||
+	    this.player.position.x >= this.widthBound-10 ||
+		this.player.position.y <= -this.heightBound+10 ||
+		this.player.position.y >= this.heightBound-10){
 		return false;
 	}
+	//console.log(this.player.position.x);
 	return true;
 }
+
+
 
 function createPlayer(){
 	var radius = 2.5;
@@ -483,33 +550,6 @@ function createFatalBoard(x, y, z){
 	board.height = height;
 	board.depth = depth;
 	
-	/*
-	var tetrahedronGeometry = new THREE.TetrahedronGeometry(1,0);
-	var tetrahedronMaterial = boardMaterial;
-	var spike1 = new THREE.Mesh(tetrahedronGeometry, tetrahedronMaterial);
-	var spike2 = new THREE.Mesh(tetrahedronGeometry, tetrahedronMaterial);
-	var spike3 = new THREE.Mesh(tetrahedronGeometry, tetrahedronMaterial);
-	var spike4 = new THREE.Mesh(tetrahedronGeometry, tetrahedronMaterial);
-
-	spike1.position.set(x-3, y+1, z);
-	spike2.position.set(x-1, y+1, z);
-	spike3.position.set(x+1, y+1, z);
-	spike4.position.set(x+3, y+1, z);
-
-	//board.add(spike1);
-	var group = new THREE.Group();
-	group.add(board);
-	group.add(spike1);
-	group.add(spike2);
-	group.add(spike3);
-	group.add(spike4);
-	group.position.copy(board.position);
-	//board.add(spike2);
-	//board.add(spike3);
-	//board.add(spike4);
-	*/
-
-
 	return board;
 }
 
