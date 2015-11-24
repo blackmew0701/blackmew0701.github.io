@@ -26,8 +26,151 @@ function startScene(){
 	start.style.bottom= 0; 
 	start.style.right= window.innerWidth/2.0;*/
 
+	var scene = new THREE.Scene();
+    scene.fog = new THREE.Fog(0xaaaaaa, 0.010, 200);
+    
+    // create a camera, which defines where we're looking at.
+    var camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
+    // position and point the camera to the center of the scene
+    camera.position.x = 0;
+    camera.position.y = 0;
+    camera.position.z = 50;
+    camera.lookAt(scene.position);
+    // create a render and set the size
+    var renderer = new THREE.WebGLRenderer({antialias: true, alpha: true});
+    renderer.setClearColor(new THREE.Color(0xaaaaff, 1.0));
+    renderer.setSize(window.innerWidth, window.innerHeight);
+
+    // add subtle ambient lighting
+    var ambientLight = new THREE.AmbientLight(0x0c0c0c);
+    scene.add(ambientLight);
+
+    var spotLight = new THREE.SpotLight(0xffffff);
+    spotLight.position.set(-40, 60, -10);
+    spotLight.castShadow = true;
+    scene.add(spotLight);
+	
+    var hemiLight = new THREE.HemisphereLight( 0x0000ff, 0xff0000, 0.6);
+    hemiLight.position.set(0,500,0);
+	scene.add(hemiLight);
+
+	var lava = THREE.ImageUtils.loadTexture("libs/lava.jpg");
+    lava.wrapS = THREE.RepeatWrapping;
+    lava.wrapT = THREE.RepeatWrapping;
+    lava.repeat.set(1.0, 0.8);
+
+
+    var planeGeometry = new THREE.PlaneGeometry(1000, 200, 20, 20);
+    var planeMaterial = new THREE.MeshLambertMaterial({map: lava});
+//        var planeMaterial = new THREE.MeshLambertMaterial();
+    var plane = new THREE.Mesh(planeGeometry, planeMaterial);
+    plane.receiveShadow = true;
+
+     // rotate and position the plane
+        plane.rotation.x = -0.5 * Math.PI;
+        plane.position.x = 0;
+        plane.position.y = -25;
+        plane.position.z = 0;
+
+    scene.add(plane);
+
+
+    var pointColor = "#ffffff";
+var spotLight2 = new THREE.DirectionalLight(pointColor);
+        spotLight2.position.set(30, 10, -50);
+        spotLight2.castShadow = true;
+        spotLight2.shadowCameraNear = 0.1;
+        spotLight2.shadowCameraFar = 1000;
+        spotLight2.shadowCameraFov = 500;
+        spotLight2.target = plane;
+        spotLight2.distance = 0;
+        spotLight2.shadowCameraNear = 2;
+        spotLight2.shadowCameraFar = 400;
+        spotLight2.shadowCameraLeft = -200;
+        spotLight2.shadowCameraRight = 200;
+        spotLight2.shadowCameraTop = 200;
+        spotLight2.shadowCameraBottom = -200;
+        spotLight2.shadowMapWidth = 2048;
+        spotLight2.shadowMapHeight = 2048;
+        scene.add(spotLight2);
+
+	var textureFlare0 = THREE.ImageUtils.loadTexture("libs/lensflare0.png");
+    var textureFlare3 = THREE.ImageUtils.loadTexture("libs/lensflare3.png");
+
+    var flareColor = new THREE.Color(0xffaacc);
+    var lensFlare = new THREE.LensFlare(textureFlare0, 150, 0.0, THREE.AdditiveBlending, flareColor);
+
+    lensFlare.add(textureFlare3, 60, 0.6, THREE.AdditiveBlending);
+    lensFlare.add(textureFlare3, 70, 0.7, THREE.AdditiveBlending);
+    lensFlare.add(textureFlare3, 120, 0.9, THREE.AdditiveBlending);
+    lensFlare.add(textureFlare3, 70, 1.0, THREE.AdditiveBlending);
+
+    lensFlare.position.copy(spotLight2.position);
+    scene.add(lensFlare);
+
+	var options1 = {
+        size: 6.0,
+        height: 0.5,
+
+        bevelEnabled: false,
+        curveSegments: 1,
+        font:"helvetiker",
+        weight:"normal",
+        style: "normal"
+    };
+	var options2 = {
+        size: 2.0,
+        height: 0.5,
+
+        bevelEnabled: false,
+        curveSegments: 1,
+        font:"helvetiker",
+        weight:"normal",
+        style: "normal"
+    };
+    var text1 = new THREE.Mesh(new THREE.TextGeometry("JUMP JUMP!", options1), planeMaterial);
+    text1.position.set(-23,5,0);
+    scene.add(text1);
+
+    var text2 = new THREE.Mesh(new THREE.TextGeometry("Press any key to start", options2), planeMaterial);
+    text2.position.set(-15,-5,0);
+    scene.add(text2);
+
+
+    render();
+    createEventListeners();
+	
+    function render() {
+		renderer.render(scene, camera);
+        /* Debug use 
+		stats.update();*/
+        // render using requestAnimationFrame
+        requestAnimationFrame(render);
+		
+        
+	}
+	function createEventListeners(){
+
+     //domElement = document.getElementById("WebGL-output");
+     domElement = document.documentElement;
+
+     function keyDownListener() {
+   
+				  gameScene();
+	
+     }
+
+     domElement.addEventListener("keydown",keyDownListener,false);
+     domElement.setAttribute("tabindex", 0);
+ }
+ 
+
+
+    renderer.domElement.id = "startscene";
+
 	// add startScene to the html element
-	document.getElementById("WebGL-output").appendChild(start);
+	//document.getElementById("WebGL-output").appendChild(start);
+    document.getElementById("WebGL-output").appendChild(renderer.domElement);
 }
 
 function gameScene(){
@@ -196,7 +339,7 @@ var spotLight2 = new THREE.DirectionalLight(pointColor);
 	renderer.domElement.id = "gameScene-output";
 	
 	// Change scene from startScene/endScene to gameScene
-	oldScene = document.getElementById("menuScene-output");
+	oldScene = document.getElementById("startscene");
 	
 	document.getElementById("WebGL-output").replaceChild(renderer.domElement,oldScene);
 	
@@ -616,10 +759,10 @@ function createStar(x, y, z){
 }
 
 function stepOn(player, board){
-	return player.position.x > board.position.x - board.width/2 && 
-	       player.position.x < board.position.x + board.width/2 && 
-	       player.position.y - player.radius <= board.position.y + board.height/2 &&
-	       player.position.y - player.radius > board.position.y - board.height/2;
+	return (player.position.x > board.position.x - board.width/2) && 
+	       (player.position.x < board.position.x + board.width/2) && 
+	       (player.position.y - player.radius <= board.position.y + board.height/2)&&
+	       (player.position.y - player.radius > board.position.y - board.height/4);
 }
 
 function intersect(player, star) {
