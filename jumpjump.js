@@ -342,7 +342,7 @@ var spotLight2 = new THREE.DirectionalLight(pointColor);
 	renderer.domElement.id = "gameScene-output";
 	
 	// Change scene from startScene/endScene to gameScene
-	oldScene = document.getElementById("menuScene-output");
+	var oldScene = document.getElementById("menuScene-output");
 	document.getElementById("WebGL-output").removeChild(oldScene);
 	
 	document.getElementById("WebGL-output").appendChild(renderer.domElement);
@@ -454,7 +454,7 @@ function Jumpjump(scene){
 	this.jumpTrigger = false; // trigger of jump action
 	this.jumping = false; // current state of the player: jump or stand on a board 
 	this.droping = false;
-	this.jumpStep;
+	this.jumpStep = 0;
 	this.jumpOriginX;
 	this.jumpOriginY;
 	this.frameCount = 0.0;
@@ -469,7 +469,12 @@ function Jumpjump(scene){
 	this.stars = [];
 	this.scores = [];
 	this.points = [];
+	this.levels = [];
 	this.currentT = 0;
+	this.currentT2 = 0;
+	this.currentT3 = 1;
+	this.currentboard = 0;
+	this.temp2 = 0;
 	
 }
 Jumpjump.prototype.constructor = Jumpjump;
@@ -477,7 +482,7 @@ Jumpjump.prototype.init = function(){
 	this.player = createPlayer();
 	this.scene.add(this.player);
 	
-	for (var i = 0; i < 4; i++) {
+	for (var i = 0; i < 5; i++) {
 		var floating_board = createFloatingBoard(20*(i-2), -this.player.radius, 0);
         this.scene.add(floating_board);
         this.floating_boards.push(floating_board);
@@ -588,7 +593,8 @@ Jumpjump.prototype.update = function(){
 		}
 	
 	    // Player steps on the floating board
-		if (stepOn(this.player, floating_board)){
+		if (stepOn(this.player, floating_board, this.jumpStep)){
+			this.droping = false;
 			this.jumping = false;
 			
 			this.player.position.x -= this.boardsMove;
@@ -597,7 +603,7 @@ Jumpjump.prototype.update = function(){
 
 		}
 	}
-	
+	this.currentT3 = this.frameCount/10.0;	
 	for (var i=0; i<this.fatal_boards.length; i++){
 		var fatal_board = this.fatal_boards[i];
 		
@@ -609,10 +615,24 @@ Jumpjump.prototype.update = function(){
 		}
 		
 		// If player steps on the fatal board, then game over
-		if (stepOn(this.player, fatal_board)){
-			return false;
-		}
+		if (stepOn(this.player, fatal_board, this.jumpStep)){
+			this.droping = false;
+			this.jumping = false;
+			this.player.position.x -= this.boardsMove;
+			this.player.position.y = this.player.radius + fatal_board.position.y + fatal_board.height/2;
+			this.currentT2 = Math.floor(this.frameCount/10.0);
+			this.currentboard = i;
+	 		
+            }
+		
 	}
+
+	if (this.currentT3 == this.currentT2){
+	 			this.droping = true;
+            	this.scene.remove(this.fatal_boards[this.currentboard]);
+            	this.fatal_boards.splice(this.currentboard,1);
+			//return false;
+		}
 	
 	
 	
@@ -628,12 +648,13 @@ Jumpjump.prototype.update = function(){
 	if(this.jumping){
 		this.jumpStep += 0.05;
 		// Jump model is a parabolic function
-		this.player.position.x = this.jumpOriginX + this.jumpStep;
+		this.player.position.x = this.jumpOriginX + this.jumpStep*2;
 		this.player.position.y = this.jumpOriginY - 11*(this.jumpStep-1)*(this.jumpStep-1) + 11
 	}
 
 	if(this.droping){
 		this.player.position.y -= 1*(0.05-1)*(0.05-1);
+		this.player.position.x -= 0.13;
 	}
 	
 	this.frameCount++; 
@@ -644,6 +665,7 @@ Jumpjump.prototype.update = function(){
 
 		//this.starMove += 0.01;
 	}
+
 	if(this.score/200 * 0.05 + 0.3 > this.boardsMove){
 		var temp = this.score / 200;
 		this.boardsMove = 0.3 + temp * 0.05;		
@@ -663,7 +685,7 @@ Jumpjump.prototype.update = function(){
 	}
 
 	var options = {
-        size: 2.0,
+        size: 3.0,
         height: 0.5,
 
         bevelEnabled: false,
@@ -672,6 +694,18 @@ Jumpjump.prototype.update = function(){
         weight:"normal",
         style: "normal"
     };
+
+    var options2 = {
+        size: 4.0,
+        height: 1.5,
+
+        bevelEnabled: false,
+        curveSegments: 1,
+        font:"helvetiker",
+        weight:"normal",
+        style: "normal"
+    };
+
     if (this.frameCount % 30 == 1){
     var text2 = new THREE.Mesh(new THREE.TextGeometry("Scores: " + this.score,options));
     text2.position.set(10,15,0);
@@ -684,6 +718,25 @@ Jumpjump.prototype.update = function(){
     this.scene.remove(score);
     this.scores.splice(0,1);
     }
+
+    if (this.frameCount == 1){
+   	var text3 = new THREE.Mesh(new THREE.TextGeometry("LEVEL 1", options2));
+    text3.position.set(-20,10,10);
+    this.scene.add(text3);
+    this.levels.push(text3);
+    }
+
+    if (Math.floor(this.score/200) > this.temp2){
+    var level = this.levels[0];
+    this.scene.remove(level);
+    this.levels.splice(0,1);
+    var text3 = new THREE.Mesh(new THREE.TextGeometry("LEVEL " + Math.ceil(this.score/200), options2));
+    this.temp2++;
+    text3.position.set(-20,10,10);
+    this.scene.add(text3);
+    this.levels.push(text3);
+	}
+
 
 
 	
@@ -762,11 +815,32 @@ function createStar(x, y, z){
 	return star;
 }
 
-function stepOn(player, board){
+function stepOn(player, board, jumpStep){
+	if (jumpStep > 4){
 	return (player.position.x > board.position.x - board.width/2) && 
 	       (player.position.x < board.position.x + board.width/2) && 
 	       (player.position.y - player.radius <= board.position.y + board.height/2)&&
-	       (player.position.y - player.radius > board.position.y - board.height/4);
+	       (player.position.y - player.radius > board.position.y - board.height*1.5);
+	   }
+    else if (jumpStep > 2){
+    		return (player.position.x > board.position.x - board.width/2) && 
+	       (player.position.x < board.position.x + board.width/2) && 
+	       (player.position.y - player.radius <= board.position.y + board.height/2)&&
+	       (player.position.y - player.radius > board.position.y - board.height);
+    }
+    else if (jumpStep == 0) {
+    	return (player.position.x > board.position.x - board.width/2) && 
+	       (player.position.x < board.position.x + board.width/2) && 
+	       (player.position.y - player.radius <= board.position.y + board.height/2)&&
+	       (player.position.y - player.radius >= board.position.y - board.height/4);
+    }
+    else {
+    	return (player.position.x > board.position.x - board.width/2) && 
+	       (player.position.x < board.position.x + board.width/2) && 
+	       (player.position.y - player.radius <= board.position.y + board.height/2)&&
+	       (player.position.y - player.radius >= board.position.y);
+    }
+	
 }
 
 function intersect(player, star) {
