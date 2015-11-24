@@ -238,9 +238,19 @@ var spotLight2 = new THREE.DirectionalLight(pointColor);
 					  model.jump = true;
 					  break;			  
 			 }
-	     } 
+	     }
+
+	     function touchListener(event){
+	     	switch (event.type) {
+    			case "touchstart": 
+      			model.jump = true;
+     			break;
+	     	}
+	     }	
+
 		 domElement.addEventListener("mousemove",mouseMoveListener,false);
 	     domElement.addEventListener("keydown",keyDownListener,false);
+	     domElement.addEventListener("ontouch",touchListener,false);
 	     domElement.setAttribute("tabindex", 0);
 	 }
 	 
@@ -287,11 +297,12 @@ function Jumpjump(scene){
 	this.player;
 	this.jumpTrigger = false; // trigger of jump action
 	this.jumping = false; // current state of the player: jump or stand on a board 
+	this.droping = false;
 	this.jumpStep;
 	this.jumpOriginX;
 	this.jumpOriginY;
-	this.frameCount = 0;
-	this.boardsFrame = 100; // speed of generating new floating boards
+	this.frameCount = 0.0;
+	this.boardsFrame = 70; // speed of generating new floating boards
 	this.boardsMove = 0.3; // speed of moving floating boards
 	this.starFrame = 230; // speed of generating new stars
 	this.starMove = 0.3; // speed of moving stars
@@ -323,20 +334,29 @@ Jumpjump.prototype.update = function(){
 
 
 	// Add new floating boards
-	if(this.frameCount % this.boardsFrame == 0){
-		var floating_board = createFloatingBoard(this.widthBound, rand(30)-16, 0);
-		this.scene.add(floating_board);
-		this.floating_boards.push(floating_board);
-		this.boards.push(floating_board);
+	if(this.frameCount % Math.floor(20.0/this.boardsMove) == 0){
+		var blueOrGreen = rand(10);
+		if (blueOrGreen < 3){
+			var fatal_board = createFatalBoard(this.widthBound, rand(30)-16, 0);
+			this.scene.add(fatal_board);
+			this.fatal_boards.push(fatal_board);
+			this.boards.push(fatal_board);
+		}
+		else {
+			var floating_board = createFloatingBoard(this.widthBound, rand(30)-16, 0);
+			this.scene.add(floating_board);
+			this.floating_boards.push(floating_board);
+			this.boards.push(floating_board);	
+		}
 	}
-	
+	/*
 	// Add new fatal boards
 	if((this.frameCount+150) % (this.boardsFrame*2) == 0){
 		var fatal_board = createFatalBoard(this.widthBound, rand(30)-16, 0);
 		this.scene.add(fatal_board);
 		this.fatal_boards.push(fatal_board);
 		this.boards.push(fatal_board);
-	}
+	}*/
 	
 	
 	// Add new stars
@@ -417,6 +437,8 @@ Jumpjump.prototype.update = function(){
 			
 			this.player.position.x -= this.boardsMove;
 			this.player.position.y = this.player.radius + floating_board.position.y + floating_board.height/2;
+
+
 		}
 	}
 	
@@ -453,16 +475,31 @@ Jumpjump.prototype.update = function(){
 		this.player.position.x = this.jumpOriginX + this.jumpStep;
 		this.player.position.y = this.jumpOriginY - 11*(this.jumpStep-1)*(this.jumpStep-1) + 11
 	}
+
+	if(this.droping){
+		this.player.position.y -= 1*(0.05-1)*(0.05-1);
+	}
 	
 	this.frameCount++; 
 	
 	// compute score  score++;
 	if(this.frameCount % 30 == 0){
 		this.score++;
-		//this.boardsMove += 0.01;
+
 		//this.starMove += 0.01;
-		//this.boardsFrame -= 5;
 	}
+	if(this.score/200 * 0.05 + 0.3 > this.boardsMove){
+		var temp = this.score / 200;
+		this.boardsMove = 0.3 + temp * 0.05;		
+	}
+	
+
+
+/*
+	if(this.frameCount % 900 == 0){
+		this.boardsFrame /=2;
+	}*/
+
 
 	if(this.frameCount % 2 == 0){
 		var list = this.scene.children;
@@ -470,7 +507,7 @@ Jumpjump.prototype.update = function(){
 	}
 
 	var options = {
-        size: 3.0,
+        size: 2.0,
         height: 0.5,
 
         bevelEnabled: false,
@@ -481,7 +518,7 @@ Jumpjump.prototype.update = function(){
     };
     if (this.frameCount % 30 == 1){
     var text2 = new THREE.Mesh(new THREE.TextGeometry("Scores: " + this.score,options));
-    text2.position.set(15,15,0);
+    text2.position.set(10,15,0);
     this.scene.add(text2);
     this.scores.push(text2);}
 
@@ -496,9 +533,9 @@ Jumpjump.prototype.update = function(){
 	
 	// if player is out of bound, then game over
 	if (this.player.position.x <= this.scene.children[4].position.x+15 ||
-	    this.player.position.x >= this.widthBound-10 ||
+	    this.player.position.x >= this.widthBound-5 ||
 		this.player.position.y <= -this.heightBound+10 ||
-		this.player.position.y >= this.heightBound-5){
+		this.player.position.y >= this.heightBound){
 		return false;
 	}
 	//console.log(this.player.position.x);
