@@ -435,7 +435,7 @@ function endScene(score){
 	end = document.createElement("input");
 	end.type = "button";
 	end.onclick = gameScene;
-	end.value = "Game over! your score is "+score+". press to restart";
+	end.value = "Game over! your score is "+score+". press any key to restart";
     end.id = "menuScene-output";
 	// Change scene from gameScene to endScene
 	oldScene = document.getElementById("gameScene-output");
