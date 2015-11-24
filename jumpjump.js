@@ -249,12 +249,11 @@ var spotLight2 = new THREE.DirectionalLight(pointColor);
 			 }
 	     }
 
-	     function touchListener(event){
-	     	event.preventDefault();
+	     function touchListener(){
 
       			model.jump = true;
      			
-	     	}
+	     	
 	     }	
 
 		 domElement.addEventListener("mousemove",mouseMoveListener,false);
