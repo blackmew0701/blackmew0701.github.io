@@ -250,7 +250,7 @@ var spotLight2 = new THREE.DirectionalLight(pointColor);
 
 		 domElement.addEventListener("mousemove",mouseMoveListener,false);
 	     domElement.addEventListener("keydown",keyDownListener,false);
-	     domElement.addEventListener("ontouch",touchListener,false);
+	     domElement.addEventListener("touchstart",touchListener,false);
 	     domElement.setAttribute("tabindex", 0);
 	 }
 	 
