@@ -241,6 +241,7 @@ var spotLight2 = new THREE.DirectionalLight(pointColor);
 	     }
 
 	     function touchListener(event){
+	     	event.preventDefault();
 	     	switch (event.type) {
     			case "touchstart": 
       			model.jump = true;
