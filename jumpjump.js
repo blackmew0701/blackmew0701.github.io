@@ -13,11 +13,16 @@
 window.onload = startScene;
 
 function startScene(){
-	start = document.createElement("input");
+	/*start = document.createElement("input");
 	start.type = "button";
 	start.onclick = gameScene;
 	start.value = "Start";
-    start.id = "menuScene-output";
+    start.id = "menuScene-output";*/
+
+    img = document.createElement("input");
+	img.type = "image";
+	img.src = "libs/download.png";
+	img.id = "menuScene-output";
 /*
 	start.style.margin= "auto";
 	start.style.position= "absolute";
@@ -25,7 +30,7 @@ function startScene(){
 	start.style.left= window.innerWidth/2.0; 
 	start.style.bottom= 0; 
 	start.style.right= window.innerWidth/2.0;*/
-
+/*
 	var scene = new THREE.Scene();
     scene.fog = new THREE.Fog(0xaaaaaa, 0.010, 200);
     
@@ -128,27 +133,24 @@ var spotLight2 = new THREE.DirectionalLight(pointColor);
         weight:"normal",
         style: "normal"
     };
-    var text1 = new THREE.Mesh(new THREE.TextGeometry("JUMP JUMP!", options1), planeMaterial);
+    var text1 = new THREE.Mesh(new THREE.TextGeometry("JUMP JUMP!", options1), new THREE.MeshLambertMaterial({color:0xcccccc}));
     text1.position.set(-23,5,0);
     scene.add(text1);
 
-    var text2 = new THREE.Mesh(new THREE.TextGeometry("Press any key to start", options2), planeMaterial);
+    var text2 = new THREE.Mesh(new THREE.TextGeometry("Press any key to start", options2), new THREE.MeshLambertMaterial({color:0xcccccc}));
     text2.position.set(-15,-5,0);
     scene.add(text2);
 
 
-    render();
+    render();*/
     createEventListeners();
-	
+	/*
     function render() {
 		renderer.render(scene, camera);
-        /* Debug use 
-		stats.update();*/
         // render using requestAnimationFrame
-        requestAnimationFrame(render);
-		
-        
+        requestAnimationFrame(render);     
 	}
+	*/
 	function createEventListeners(){
 
      //domElement = document.getElementById("WebGL-output");
@@ -166,11 +168,12 @@ var spotLight2 = new THREE.DirectionalLight(pointColor);
  
 
 
-    renderer.domElement.id = "startscene";
+    //renderer.domElement.id = "startscene";
 
 	// add startScene to the html element
+	document.getElementById("WebGL-output").appendChild(img);
 	//document.getElementById("WebGL-output").appendChild(start);
-    document.getElementById("WebGL-output").appendChild(renderer.domElement);
+    //document.getElementById("WebGL-output").appendChild(renderer.domElement);
 }
 
 function gameScene(){
@@ -339,9 +342,10 @@ var spotLight2 = new THREE.DirectionalLight(pointColor);
 	renderer.domElement.id = "gameScene-output";
 	
 	// Change scene from startScene/endScene to gameScene
-	oldScene = document.getElementById("startscene");
+	oldScene = document.getElementById("menuScene-output");
+	document.getElementById("WebGL-output").removeChild(oldScene);
 	
-	document.getElementById("WebGL-output").replaceChild(renderer.domElement,oldScene);
+	document.getElementById("WebGL-output").appendChild(renderer.domElement);
 	
 	model = new Jumpjump(scene);
 	model.init();
