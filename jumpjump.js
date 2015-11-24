@@ -250,18 +250,17 @@ var spotLight2 = new THREE.DirectionalLight(pointColor);
 	     }
 
 	     function touchListener(event){
-	     	evendt.preventDefault();
-	     	switch (event.type) {
-    			case "touchstart": 
+	     	event.preventDefault();
+
       			model.jump = true;
-     			break;
+     			
 	     	}
 	     }	
 
 		 domElement.addEventListener("mousemove",mouseMoveListener,false);
  		 domElement.addEventListener("mousedown",mouseDownListener,false);
 	     domElement.addEventListener("keydown",keyDownListener,false);
-	     //domElement.addEventListener("touchstart",touchListener,false);
+	     domElement.addEventListener("touchstart",touchListener,false);
 	     domElement.setAttribute("tabindex", 0);
 	 }
 	 
