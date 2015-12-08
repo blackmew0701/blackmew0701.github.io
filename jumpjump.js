@@ -182,10 +182,13 @@ function gameScene(){
 	
     // create a scene, that will hold all our elements such as objects, cameras and lights.
     var scene = new THREE.Scene();
-    scene.fog = new THREE.Fog(0xaaaaaa, 0.010, 200);
+    
     
     // create a camera, which defines where we're looking at.
-    var camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
+    var camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000000);
+
+    //var listener1 = new THREE.AudioListener();
+	//camera.add( listener1 );
     // position and point the camera to the center of the scene
     camera.position.x = 0;
     camera.position.y = 0;
@@ -193,7 +196,7 @@ function gameScene(){
     camera.lookAt(scene.position);
     // create a render and set the size
     var renderer = new THREE.WebGLRenderer({antialias: true, alpha: true});
-    renderer.setClearColor(new THREE.Color(0xaaaaff, 1.0));
+    //renderer.setClearColor(new THREE.Color(0xaaaaff, 1.0));
     renderer.setSize(window.innerWidth, window.innerHeight);
     //renderer.shadowMapEnabled = true;
 	
@@ -213,25 +216,41 @@ function gameScene(){
     hemiLight.position.set(0,500,0);
 	scene.add(hemiLight);
 	
+
+
+
+
 	var lava = THREE.ImageUtils.loadTexture("libs/lava.jpg");
     lava.wrapS = THREE.RepeatWrapping;
     lava.wrapT = THREE.RepeatWrapping;
     lava.repeat.set(1.0, 0.8);
 
 
-    var planeGeometry = new THREE.PlaneGeometry(1000, 200, 20, 20);
+    var planeGeometry = new THREE.BoxGeometry(1000, 200, 20, 20);
     var planeMaterial = new THREE.MeshLambertMaterial({map: lava});
 //        var planeMaterial = new THREE.MeshLambertMaterial();
-    var plane = new THREE.Mesh(planeGeometry, planeMaterial);
+    var plane = new THREE.Mesh(planeGeometry, planeMaterial );
     plane.receiveShadow = true;
+
+
+
 
      // rotate and position the plane
         plane.rotation.x = -0.5 * Math.PI;
         plane.position.x = 0;
-        plane.position.y = -25;
+        plane.position.y = -42;
         plane.position.z = 0;
+/*
+	var sound1 = new THREE.Audio(listener1);
+	sound1.load('bgm.mp3');
+	sound1.setRefDistance(20);
+	sound1.setLoop(false);
+	sound1.setRolloffFactor(2);*/
 
+	
     scene.add(plane);
+
+	//plane.add(sound1);
 
     var box = new THREE.BoxGeometry(110, 80, 20);
 	var boxmaterial = new THREE.MeshLambertMaterial({color:0xcccccc});
@@ -290,6 +309,9 @@ function gameScene(){
 
 	spikeboard.position.z = -50;
 	scene.add(spikeboard);
+
+
+
 /*
     var spotLight0 = new THREE.SpotLight(0xcccccc);
     spotLight0.position.set(30, 10, -50);
@@ -327,7 +349,8 @@ var spotLight2 = new THREE.DirectionalLight(pointColor);
     lensFlare.add(textureFlare3, 70, 1.0, THREE.AdditiveBlending);
 
     lensFlare.position.copy(spotLight2.position);
-    scene.add(lensFlare);
+    //scene.add(lensFlare);
+
 
 	/* Debug use 
 	var sphere1 = new THREE.SphereGeometry(0.1,20,20);
@@ -338,7 +361,59 @@ var spotLight2 = new THREE.DirectionalLight(pointColor);
 	s.position.z = 0;
 	scene.add(s);*/
 	
+	var cubeCamera = new THREE.CubeCamera( 1, 100000, 128 );
+	scene.add( cubeCamera );
+	var chromeMaterial = new THREE.MeshPhongMaterial( { color: 0xffffff, envMap: cubeCamera.renderTarget, emissive: 'gray' } );
+
+	var ball = new THREE.Mesh( new THREE.SphereGeometry(10,32,32), chromeMaterial );
+	ball.position.y = 0;
+
+	//scene.add( ball );
+
+	    var planeGeometry2 = new THREE.BoxGeometry(1000, 200, 20, 20);
+    //var planeMaterial = new THREE.MeshLambertMaterial({map: lava});
+//        var planeMaterial = new THREE.MeshLambertMaterial();
+    var plane2 = new THREE.Mesh(planeGeometry, chromeMaterial );
+    plane2.receiveShadow = true;
+
+
+
+
+     // rotate and position the plane
+        plane2.rotation.x = -0.5 * Math.PI;
+        plane2.position.x = 0;
+        plane2.position.y = -25;
+        plane2.position.z = 0;
+
+    //scene.add(plane2);
+	var roomImage = THREE.ImageUtils
+            .loadTexture('sky3.jpg');
+	roomImage.magFilter = THREE.NearestFilter;
+	roomImage.minFilter = THREE.LinearMipMapLinearFilter;
+	roomImage.wrapS = roomImage.wrapT = THREE.RepeatWrapping;	
 	
+    // creating a skybox from a regular textured cue
+	//var skybox1Material = new THREE.MeshBasicMaterial({color:0xfffff,map:rocksImage});
+	//var skybox1 = new THREE.Mesh(new THREE.BoxGeometry(10000,10000,10000), skybox1Material);
+
+	var skybox2Material = new THREE.MeshBasicMaterial({color:0xffffff, map:roomImage});
+	var skybox2 = new THREE.Mesh(new THREE.SphereGeometry(200,32,32), skybox2Material);
+	
+	skybox = skybox2;
+	skybox.scale.x = -1;
+	//skybox.scale.y = -5.0; // this is where we turn it inside out..
+	//skybox.rotation.x = 0.5 * Math.PI;
+	skybox.position.y = - 100;
+
+	var background = new THREE.Mesh (new THREE.PlaneGeometry(innerWidth,innerHeight), skybox2Material);
+	background.position.z = -800;
+
+	//scene.add(background);
+
+	scene.add(skybox);
+	scene.fog = new THREE.Fog(0xaa9999, 0.010, 300);
+	//scene.add(sound1);
+
 	renderer.domElement.id = "gameScene-output";
 	
 	// Change scene from startScene/endScene to gameScene
@@ -347,19 +422,35 @@ var spotLight2 = new THREE.DirectionalLight(pointColor);
 	
 	document.getElementById("WebGL-output").appendChild(renderer.domElement);
 	
-	model = new Jumpjump(scene);
+	model = new Jumpjump(scene, cubeCamera, chromeMaterial, renderer);
 	model.init();
 	createEventListeners();
 	//renderer.render(scene, camera);
 	render();
 	
+var gtime = 0.0;
+
     function render() {
 		renderer.render(scene, camera);
         /* Debug use 
 		stats.update();*/
+/*
+		gtime += 0.5;
+	
+	ball.position.x = 20.0*Math.sin(gtime/180*Math.PI);
+	ball.position.z = 20.0*Math.cos(gtime/180*Math.PI);
+
+plane2.visible = false;
+cubeCamera.position.copy( plane2.position );
+cubeCamera.updateCubeMap( renderer, scene );
+//Render the scene
+plane2.visible = true;
+//renderer.render( scene, camera );*/
+
 		if(!model.update()){
 			endScene(model.score);
 		}
+
         // render using requestAnimationFrame
         requestAnimationFrame(render);
 		
@@ -404,7 +495,7 @@ var spotLight2 = new THREE.DirectionalLight(pointColor);
 	     }	
 
 		 domElement.addEventListener("mousemove",mouseMoveListener,false);
- 		 domElement.addEventListener("mousedown",mouseDownListener,false);
+ 		 //domElement.addEventListener("mousedown",mouseDownListener,false);
 	     domElement.addEventListener("keydown",keyDownListener,false);
 	     domElement.addEventListener("touchstart",touchListener,false);
 	     domElement.setAttribute("tabindex", 0);
@@ -446,10 +537,13 @@ function endScene(score){
 }
 
 
-function Jumpjump(scene){
+function Jumpjump(scene, cubeCamera, chromeMaterial, renderer){
 	this.widthBound = 50; // From center of the screen
 	this.heightBound = 40; // From center of the screen
 	this.scene = scene;
+	this.cubeCamera = cubeCamera;
+	this.chromeMaterial = chromeMaterial;
+	this.renderer = renderer;
 	this.player;
 	this.jumpTrigger = false; // trigger of jump action
 	this.jumping = false; // current state of the player: jump or stand on a board 
@@ -479,7 +573,7 @@ function Jumpjump(scene){
 }
 Jumpjump.prototype.constructor = Jumpjump;
 Jumpjump.prototype.init = function(){
-	this.player = createPlayer();
+	this.player = createPlayer(this.chromeMaterial);
 	this.scene.add(this.player);
 	
 	for (var i = 0; i < 5; i++) {
@@ -654,7 +748,7 @@ Jumpjump.prototype.update = function(){
 
 	if(this.droping){
 		this.player.position.y -= 1*(0.05-1)*(0.05-1);
-		this.player.position.x -= 0.13;
+		this.player.position.x -= 0.14;
 	}
 	
 	this.frameCount++; 
@@ -737,7 +831,11 @@ Jumpjump.prototype.update = function(){
     this.levels.push(text3);
 	}
 
-
+	this.player.visible = false;
+	this.cubeCamera.position.copy( this.player.position );
+	this.cubeCamera.updateCubeMap( this.renderer, this.scene );
+	//Render the scene
+	this.player.visible = true;
 
 	
 	// if player is out of bound, then game over
@@ -753,11 +851,12 @@ Jumpjump.prototype.update = function(){
 
 
 
-function createPlayer(){
-	var radius = 2.5;
+function createPlayer(chromeMaterial){
+	var radius = 3.0;
 	var sphere = new THREE.SphereGeometry(radius,20,20);
-	var material =  new THREE.MeshLambertMaterial({color: 0xffff00, shading:THREE.SmoothShading});
-	var player = new THREE.Mesh(sphere, material);
+	//var material =  new THREE.MeshLambertMaterial({color: 0xffff00, shading:THREE.SmoothShading});
+	var material =  new THREE.MeshBasicMaterial({color: 0xffffff, shading:THREE.SmoothShading});
+	var player = new THREE.Mesh(sphere, chromeMaterial);
 	player.radius = radius;
 	//avatar.traverse(function (e) {
 	  //              e.castShadow = true
