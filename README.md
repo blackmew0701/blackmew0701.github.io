@@ -1,12 +1,14 @@
 Game Name: Jumpjump
 Authors: Siting Ren, Shuyuan Nie, Zhengyu Huang
-Version: 11/09/2015
+Version: 12/10/2015
 
 How to play:
-Press [Start] button to start the game.
-Press keyboard [space] to control the player (a yellow ball) to jump.
+Press any key button to start the game.
+Press keyboard [space] to control the avatar to jump.
 Drag the mouse to the left or the right to rotate the scene.
-Try to collect red stars as much as possible to earn scores.
+Lose the game if caught by the chasing spike board or jumping out of bounds.
+Try to collect red stars as much as possible to earn scores and push back the spike board.
+The game levels up for every 200 scores and the moving speed of boards increases.
 The player can stand on blue floating boards.
-If the player goes out of bounds or touches green boards, then game over.
-After game is over, you can see your score and press the button to restart.
+The green boards will disappear after the player stands on the board for a while.
+After game is over, you can see your score and press any button to restart.
